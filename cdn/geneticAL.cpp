@@ -7,11 +7,13 @@
 
 using namespace std;
 
-bool comparison(Chrom a, Chrom b){
-return a.fit<b.fit;
+bool comparison(Chrom a, Chrom b)
+{
+	return a.fit<b.fit;
 }
 
-vector<vector<int>> GA::getBestServersPos(int initNum){
+vector<vector<int>> GA::getBestServersPos(int initNum)
+{
 	chrom* popcurrent = new struct Chrom[initNum];
 	chrom* popnext = new struct Chrom[initNum];
 
@@ -25,10 +27,10 @@ vector<vector<int>> GA::getBestServersPos(int initNum){
 	srand(time(0));
 	evpop(popcurrent, initNum);	//随机产生初始种子群
 	sort(popnext, popnext+initNum, comparison);
-	
+
 	Min = popcurrent[0].fit;//对Min值进行初始化
-	
-	
+
+
 	/*****这里可能需要修改，增加收敛就停止*****/
 	for(i =0;i< this->iteration;i++)                          // 开始迭代；
 	{
@@ -41,7 +43,7 @@ vector<vector<int>> GA::getBestServersPos(int initNum){
 		}
 		//pickchroms(popnext, initNum);
 		//pickchroms_new(popcurrent, popnext, initNum);                    // 挑选优秀个体；
-		
+
 		crossover(popnext, initNum);                     // 交叉得到新个体；
 		sort(popnext, popnext+initNum, comparison);
 		mutation(popnext, initNum);                      // 变异得到新个体；
@@ -120,7 +122,7 @@ void *GA::evpop(chrom* popcurrent, int initNum)   // 函数：随机生成初始
 
 vector<int> GA::x(chrom popcurrent)  // 将编码转换成编号
 {
-	
+
 	vector<int> selectNode;
 	for(int i = 0; i < this->nodeNum; i++){
 		if(popcurrent.bit[i]){
@@ -146,15 +148,15 @@ int GA::y(vector<int> x)// 函数：求个体的适应度；*****************这
 		//如果这个节点之前没有算过，那么重新选择最小最大路径，如果算过，则直接在hash表中找
 		//cout << "server cost is " << T.GetServerCost() << endl;
 		//cout << "start find min cost flow" << endl;
-        	cost = T.minCostFlow(x, path);
+		cost = T.minCostFlow(x, path);
 		//cout << "end find min cost flow" << cost << endl;
 		if(cost != INIT_Min){
 			cost += T.GetServerCost() * x.size();
 		}
-		
+
 		hashFit[x] = cost;
 		//hashPath[x] = route;
-		
+
 	}
 	else  {
 		cost = 	hashFit[x];
@@ -186,7 +188,7 @@ void *GA::pickchroms_new (chrom* popcurrent, chrom* popnext, int initNum)//计�
 	{
 		popnext[men].cfit = popnext[men-1].cfit + popnext[men].rfit;
 	}
-	
+
 	for ( i = 1; i < initNum; i++ )
 	{//产生0~1之间的随机数
 		//p = r8_uniform_ab ( 0, 1, seed );//通过函数生成0~1之间均匀分布的数字
@@ -234,10 +236,10 @@ void *GA::pickchroms (chrom* popnext, int initNum)          // 函数：选择�
 		}               
 	}
 	/*for(i =0;i<initNum; i++)
-	{
-		printf("\nSorting:popnext[%d] fitness=%d" ,i, popnext[i ].fit);
-		printf("\n" );                     
-	} */                    
+	  {
+	  printf("\nSorting:popnext[%d] fitness=%d" ,i, popnext[i ].fit);
+	  printf("\n" );                     
+	  } */                    
 	return(0);
 }   
 
@@ -271,9 +273,9 @@ void *GA::crossover (chrom* popnext, int initNum)              // 函数：交�
 	}
 
 	/*for(i =0;i<initNum; i++)
-	{
-		cout << "popcurrent " << i << " \nbit is " << x(popcurrent[i]) << "\nfit is " << popcurrent[i].fit << endl;
-		// 输出新个体；
+	  {
+	  cout << "popcurrent " << i << " \nbit is " << x(popcurrent[i]) << "\nfit is " << popcurrent[i].fit << endl;
+	// 输出新个体；
 	}*/
 	return(0);
 }                                          
@@ -295,15 +297,15 @@ void *GA::mutation (chrom* popnext, int initNum)               // 函数：变�
 		popnext[row].fit= y(x(popnext[row]));     // 计算变异后的适应度值；
 		// 输出变异后的新个体；
 	}                                          
-	
-	
+
+
 
 	//每次最优的前四个变异，保存在最后一个
 	col=rand()%this->nodeNum;                            // 随机产生要变异的基因位号；
 	row=rand()%4;                            // 随机产生要变异的染色体号；
 	popnext[initNum-1].bit[col] = popnext[initNum-1].bit[col]==0?1:0;     
 	popnext[initNum-1].fit = y(x(popnext[initNum-1]));
-	
+
 	if(random > 40)                              // 每次有20的几率变异变异从第四个开始到最后一个，保存在倒数第二个
 	{
 		col=rand()%this->nodeNum;                            // 随机产生要变异的基因位号；
