@@ -10,9 +10,9 @@ char* vec_to_int(vector<vector<int >> path)
 	sprintf(in, "%d", pi);
 	str += in;
 	str += "\n\n";
-	for (int i = 0; i< path.size() ;i++)
+	for (size_t i = 0; i< path.size() ;i++)
 	{
-		for (int j = 0; j < path[i].size(); j++)
+		for (size_t j = 0; j < path[i].size(); j++)
 		{
 			pi = path[i][j];
 			sprintf(in, "%d", pi);

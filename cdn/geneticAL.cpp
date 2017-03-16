@@ -70,7 +70,7 @@ vector<vector<int>> GA::getBestServersPos(int initNum)
 	}
 	cout << "k size is " << k.size() << endl;
 	cout << "\n 当x等于 ";
-	for(int i = 0; i < k.size(); i++){
+	for(size_t i = 0; i < k.size(); i++){
 		cout << k[i] << "\t";
 	}
 	cout << " 时，函数得到最小值为： " << y(k) << endl;
