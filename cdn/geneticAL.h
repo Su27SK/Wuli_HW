@@ -44,7 +44,7 @@ class GA{
         void *evpop(chrom* popcurrent, int num);         //种群初始化
         vector<int> x(chrom popcurrent);                
         int y(vector<int> x);
-        void *pickchroms(chrom* popcurrent, int initNum);    //选择操作
+        //void *pickchroms(chrom* popcurrent, int initNum);    //选择操作
         void *pickchroms_new(chrom* popcurrent, chrom* popnext, int initNum);//轮盘选择
         void *crossover(chrom* popnext, int initNum);        //交叉操作
         void *mutation(chrom* popnext, int initNum);         //突变操作

@@ -21,21 +21,15 @@ vector<vector<int>> GA::getBestServersPos(int initNum)
 	Min=INIT_Min;                                      // 函数最大值
 	vector<int> k;	
 
-	//cout <<  this->nodeNum << endl;
-	//cout <<  this->iteration << endl;
-
 	srand(time(0));
 	evpop(popcurrent, initNum);	//随机产生初始种子群
 	sort(popnext, popnext+initNum, comparison);
 
 	Min = popcurrent[0].fit;//对Min值进行初始化
 
-
 	/*****这里可能需要修改，增加收敛就停止*****/
 	for(i =0;i< this->iteration;i++)                          // 开始迭代；
 	{
-
-		//printf("\ni = %d\n" ,i);                 // 输出当前迭代次数；
 
 		for(j =0;j<initNum; j++)
 		{
@@ -60,7 +54,6 @@ vector<vector<int>> GA::getBestServersPos(int initNum)
 	//对于真正随机数是需要注意取较大的迭代次数
 	for(l =0;l<initNum; l++)
 	{
-		//cout << "popcurrent " << l << " \nbit is " << x(popcurrent[l]) << "\nfit is " << popcurrent[l].fit << endl;
 		if(popcurrent[l].fit < Min)
 		{
 			Min=popcurrent[l].fit;
@@ -127,13 +120,10 @@ vector<int> GA::x(chrom popcurrent)  // 将编码转换成编号
 	for(int i = 0; i < this->nodeNum; i++){
 		if(popcurrent.bit[i]){
 			selectNode.push_back(i);
-			//cout << i << "\t";
 		}
 	}
-	//cout << "\n*******************************************************************************" << endl;
 	return selectNode;                           
 }                                     
-//需要能能够从外部直接传输函数，加强鲁棒性
 
 
 int GA::y(vector<int> x)// 函数：求个体的适应度；*****************这个地方可以建一个hash表，优化时间
@@ -146,22 +136,17 @@ int GA::y(vector<int> x)// 函数：求个体的适应度；*****************这
 	vector<vector<int>>& path = route;
 	if(hashFit.find(x) == hashFit.end()) {	
 		//如果这个节点之前没有算过，那么重新选择最小最大路径，如果算过，则直接在hash表中找
-		//cout << "server cost is " << T.GetServerCost() << endl;
-		//cout << "start find min cost flow" << endl;
 		cost = T.minCostFlow(x, path);
-		//cout << "end find min cost flow" << cost << endl;
 		if(cost != INIT_Min){
 			cost += T.GetServerCost() * x.size();
 		}
 
 		hashFit[x] = cost;
-		//hashPath[x] = route;
 
 	}
 	else  {
 		cost = 	hashFit[x];
 	}
-	//cout << "\n \n x size is " << x.size() << "   cost is " << cost << endl;
 	return(cost);             
 } 
 
@@ -217,53 +202,31 @@ void *GA::pickchroms_new (chrom* popcurrent, chrom* popnext, int initNum)//计�
 	}
 	return(0);
 }
-void *GA::pickchroms (chrom* popnext, int initNum)          // 函数：选择个体；
-{
-	int i ,j;
-	chrom temp ;                                // 中间变量
-	//因此此处设计的是个个体，所以参数是
-	for(i =0;i<initNum-1; i++)                           // 根据个体适应度来排序；（冒泡法）
-	{
-		for(j =0;j<initNum - 1 - i; j++)
-		{
-			if(popnext [j+1].fit<popnext [j].fit)
-			{
-				temp=popnext[j+1];
-				popnext[j +1]=popnext[j];
-				popnext[j ]=temp;
 
-			}  
-		}               
-	}
-	/*for(i =0;i<initNum; i++)
-	  {
-	  printf("\nSorting:popnext[%d] fitness=%d" ,i, popnext[i ].fit);
-	  printf("\n" );                     
-	  } */                    
-	return(0);
-}   
-
+/**
+*	交叉，这里有两个策略，一个是前两个交叉，还有一个是第一个跟随机的一个交叉。
+**/
 void *GA::crossover (chrom* popnext, int initNum)              // 函数：交叉操作；
 {
 
 	int random ;
-	int i ;
-	//srand(time(0)); 
+	int i;
 	random=rand ();                             // 随机产生交叉点；
+	int subCross = random % initNum;
 	random=(random %this->nodeNum);                     // 交叉点；
 	for(i =0;i< random;i ++)                   
 	{
 		popnext[initNum - 1].bit [i]= popnext[0].bit [i];   // child 1 cross over
 		popnext[initNum - 2].bit [i]= popnext[1].bit [i];   // child 2 cross over
 		popnext[initNum - 3].bit [i]= popnext[0].bit [i];   // child 1 cross over
-		popnext[initNum - 4].bit [i]= popnext[1].bit [i];   // child 2 cross over
+		popnext[initNum - 4].bit [i]= popnext[subCross].bit [i];   // child 2 cross over
 	}
 
 	for(i =random; i<this->nodeNum;i ++)                      // crossing the bits beyond the cross point index
 	{
 		popnext[initNum - 1].bit [i]= popnext[1].bit [i];    // child 1 cross over
 		popnext[initNum - 2].bit [i]= popnext[0].bit [i];    // chlid 2 cross over
-		popnext[initNum - 3].bit [i]= popnext[1].bit [i];   // child 1 cross over
+		popnext[initNum - 3].bit [i]= popnext[subCross].bit [i];   // child 1 cross over
 		popnext[initNum - 4].bit [i]= popnext[0].bit [i];   // child 2 cross over
 	}  
 
@@ -291,7 +254,7 @@ void *GA::mutation (chrom* popnext, int initNum)               // 函数：变�
 	if(random == 25)                              // random==25的概率只有2%，即变异率为，所以是以小概率进行变异！！
 	{
 		col=rand()%this->nodeNum;                            // 随机产生要变异的基因位号；
-		row=rand()%(initNum - 1) + 1;                            // 随机产生要变异的染色体号；
+		row=rand()%(initNum - 2) + 2;                            // 随机产生要变异的染色体号；
 
 		popnext[row].bit[col] = popnext[row].bit[col]==0?1:0;
 		popnext[row].fit= y(x(popnext[row]));     // 计算变异后的适应度值；
@@ -300,16 +263,17 @@ void *GA::mutation (chrom* popnext, int initNum)               // 函数：变�
 
 
 
-	//每次最优的前四个变异，保存在最后一个
+	//每次最优的前四个变异，末尾淘汰制
 	col=rand()%this->nodeNum;                            // 随机产生要变异的基因位号；
 	row=rand()%4;                            // 随机产生要变异的染色体号；
 	popnext[initNum-1].bit[col] = popnext[initNum-1].bit[col]==0?1:0;     
 	popnext[initNum-1].fit = y(x(popnext[initNum-1]));
 
-	if(random > 40)                              // 每次有20的几率变异变异从第四个开始到最后一个，保存在倒数第二个
+	if(random > 40)                              
 	{
+		
 		col=rand()%this->nodeNum;                            // 随机产生要变异的基因位号；
-		row=rand()%(initNum - 4) + 4;                            // 随机产生要变异的染色体号；
+		row=rand()%(initNum / 3);                            // 随机产生要变异的染色体号；前33%有四分之一的概率变异，并保存到到溯第二个
 
 		popnext[initNum-2].bit[col] = popnext[row].bit[col]==0?1:0;
 		popnext[initNum-2].fit= y(x(popnext[row]));     // 计算变异后的适应度值；
