@@ -17,7 +17,9 @@ char* vec_to_int(vector<vector<int >> path)
 			pi = path[i][j];
 			sprintf(in, "%d", pi);
 			str += in;
-			str += " ";
+			if (j != path[i].size() - 1) {
+				str += " ";
+			}
 		}
 		if (i != path.size() - 1) {
 			str += "\n";
