@@ -1,0 +1,3 @@
+/home/hadoop/project/HW/build/CMakeFiles/edit_cache.dir
+/home/hadoop/project/HW/build/CMakeFiles/rebuild_cache.dir
+/home/hadoop/project/HW/build/CMakeFiles/cdn.dir
