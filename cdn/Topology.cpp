@@ -114,6 +114,8 @@ int Topology::_minCostFlow(int s, int t, vector<vector<int>>& path)
 		}
 		reverse(temp.begin(), temp.end());
 		temp.pop_back();
+		int consume = GetNetLinkNode(temp.back());
+		temp.push_back(consume);
 		temp.push_back(f);
 		path.push_back(temp);
 	}
