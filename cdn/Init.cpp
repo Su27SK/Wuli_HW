@@ -169,6 +169,17 @@ int  GraphLinkedTable::GetConLinkNode(int cv)
 }
 
 
+
+int GraphLinkedTable::GetNetLinkNode(int nv)
+{
+	for(int i=0;i<c_count;i++)
+	{
+		if(consume[i].v_id==nv)
+			return i;
+	}
+		return INT_MAX;
+}
+
 int  GraphLinkedTable::GetConDemand(int cv)
 {
 	if (cv >= c_count)

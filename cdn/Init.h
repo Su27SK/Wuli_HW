@@ -62,7 +62,8 @@ class GraphLinkedTable
 		int GetEdgebw(int v1, int v2);                       //return bandwith between two nodes,if not exist,return 0
 		int GetEdgecost(int v1, int v2);                     //rreturn cost between two nodes,if not exist,return 0
 		vector<int> GetNeiborNode(int v);                    //return nextNodes
-		int GetConLinkNode(int cv);                          //return the net node id connected with consumer node,,if the id is not exist,return infinity
+		int GetConLinkNode(int cv);                          //return the net node id connected with consumer node,if the id is not exist,return infinity
+		int GetNetLinkNode(int nv);                          //return the consumer node id connected with net node	,if the id is not exist,return infinity
 		int GetConDemand(int cv);                            //return demand ofconsumer node,if the id is not exist,return infinity
 		int GetServerCost();                                 //return  Server Cost
 		int GetVNum();                                       //return the number of net node 
@@ -70,8 +71,8 @@ class GraphLinkedTable
 		int GetVEdge(int v);                                 //Return Every node's degree
 		void GraphInit(char * topo[MAX_EDGE_NUM], int line_num);
 		stack<int> str_to_int(char *s);
-		int ReturnEdgeNo(int in,int out);                     //fanhui wangluojiedian d diyitiaobian bianhao
-		void PrintHeader();                                    //dayin suoyou jiedian de diyitiao bian bianhao
+		int ReturnEdgeNo(int in,int out);                     //return the No of net node
+		void PrintHeader();                                    //Print first Edge No of One Node
 };
 
 
