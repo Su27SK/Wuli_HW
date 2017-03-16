@@ -87,7 +87,7 @@ void GraphLinkedTable::PrintNetListInfo()
 		for (int j = 0; j < vertex[i].edge_list.size(); j++)
 		{
 			cout << vertex[i].v_id << "\t" << vertex[i].edge_list[j].v_next << "\t";
-		cout << vertex[i].edge_list[j].bandwith << "\t" << vertex[i].edge_list[j].cost << endl;
+			cout << vertex[i].edge_list[j].bandwith << "\t" << vertex[i].edge_list[j].cost << endl;
 		}
 	}
 	cout << endl;
@@ -98,7 +98,7 @@ void GraphLinkedTable::PrintConNodeInfo()
 {
 	cout << "下面打印消费节点信息：" << endl;
 	for (int i = 0; i < c_count; i++)
-		cout << consume[i].con_id << "\t" << consume[i].v_id << "\t" << consume[i].demand << endl;
+	  cout << consume[i].con_id << "\t" << consume[i].v_id << "\t" << consume[i].demand << endl;
 	cout << endl;
 }
 
@@ -128,9 +128,9 @@ int GraphLinkedTable::GetEdgebw(int v1, int v2)
 		i++;
 	}
 	if (i<vertex[v1].edge_list.size())
-		return vertex[v1].edge_list[i].bandwith;
+	  return vertex[v1].edge_list[i].bandwith;
 	else
-		return 0;
+	  return 0;
 }
 
 
@@ -142,9 +142,9 @@ int GraphLinkedTable::GetEdgecost(int v1, int v2)
 		i++;
 	}
 	if (i<vertex[v1].edge_list.size())
-		return vertex[v1].edge_list[i].cost;
+	  return vertex[v1].edge_list[i].cost;
 	else
-		return INT_MAX;
+	  return INT_MAX;
 }
 
 
@@ -164,7 +164,7 @@ vector<int> GraphLinkedTable::GetNeiborNode(int v)
 int  GraphLinkedTable::GetConLinkNode(int cv)
 {
 	if (cv > c_count)
-		return INT_MAX;
+	  return INT_MAX;
 	return consume[cv].v_id;
 }
 
@@ -172,7 +172,7 @@ int  GraphLinkedTable::GetConLinkNode(int cv)
 int  GraphLinkedTable::GetConDemand(int cv)
 {
 	if (cv >= c_count)
-		return INT_MAX;
+	  return INT_MAX;
 	return consume[cv].demand;
 }
 
@@ -209,14 +209,14 @@ void GraphLinkedTable::PrintHeader()
 	}
 	//cout<<"Now headEdge:"<<endl;
 	//for(int i=0;i<headEdge.size();i++)
-		//cout<<i<<'\t'<<headEdge[i]<<endl;
+	//cout<<i<<'\t'<<headEdge[i]<<endl;
 	//cout<<"v2 Edege No:"<<endl;
 	//cout<<headEdge[2]<<endl;
 	//int formal=headEdge[2];
 	//while(vec_edge[formal].next!=-1)
 	//{
-		//cout<<vec_edge[formal].next<<endl;
-		//formal=vec_edge[formal].next;
+	//cout<<vec_edge[formal].next<<endl;
+	//formal=vec_edge[formal].next;
 	//}
 }
 
@@ -227,31 +227,11 @@ int GraphLinkedTable::ReturnEdgeNo(int in,int out)
 	while(vec_edge.size()>i) 
 	{
 		if(vec_edge[i].in==in&& vec_edge[i].out==out)
-			return i;
+		  return i;
 		i++;
 	}
 	return -1;
 }
-
-
-void GraphLinkedTable::SetNextEdgeNo()
-{
-	int formal;
-	cout<<"test V0:"<<endl<<headEdge[0]<<endl;
-	for(int i_no=0;i_no<v_count;i_no++)
-	{
-		int hd=headEdge[i_no];
-		formal=hd;
-		for(int j=1;j<vertex[i_no].edge_list.size();j++)
-		{
-			vec_edge[formal].next=ReturnEdgeNo(i_no,vertex[i_no].edge_list[j].v_next);
-			formal=ReturnEdgeNo(i_no,vertex[i_no].edge_list[j].v_next);
-	//		if(i_no==0)
-	//			cout<<formal<<endl;
-		}
-	}
-}
-
 
 void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 {
@@ -269,7 +249,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 		in.pop();
 		vn = in.top();
 		in.pop();
-	
+
 
 		cur_lnum++;                  //空行
 		cur_lnum++;
@@ -321,7 +301,6 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 	{
 		headEdge.push_back(ReturnEdgeNo(i,vertex[i].edge_list[0].v_next));
 	}
-	//SetNextEdgeNo();
 }
 
 
