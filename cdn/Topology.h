@@ -21,6 +21,7 @@ class Topology:public GraphLinkedTable
 		int _originEdgeNums;
 		int _virtualSource;
 		int _virtualSink;
+		int _maxDemand;
 		bool _spfa(int s, int t);
 		int _minCostFlow(int s, int t, vector<vector<int>>& path);
 		void _init(vector<int> deploy);
@@ -31,6 +32,7 @@ class Topology:public GraphLinkedTable
 			_virtualSource = -1;
 			_virtualSink = -1;
 		    _originEdgeNums = 0;
+			_maxDemand = 0;
 		}
 		void init();
 		int minCostFlow(vector<int> deploy, vector<vector<int>>& path);

@@ -117,6 +117,9 @@ int Topology::_minCostFlow(int s, int t, vector<vector<int>>& path)
 		temp.push_back(f);
 		path.push_back(temp);
 	}
+	if (flow < _maxDemand) {
+		cost = 0;
+	}
 	return cost;
 }
 
@@ -127,6 +130,9 @@ void Topology::init()
 {
 	gEdge.assign(vec_edge.begin(), vec_edge.end());
 	_originEdgeNums = gEdge.size();
+	for (int i = 0; i < GetCNum(); i++) {
+		_maxDemand += GetConDemand(i);
+	}
 }
 
 /**
