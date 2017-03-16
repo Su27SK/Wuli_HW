@@ -7,32 +7,32 @@ using namespace std;
 #define MAX_EDGE_NUM    (2000 * 20)
 #define MAX_NODE_NUM    1600
 
-struct edge            //与某一点相连的边信息
+struct edge            //Edge Information with Node
 {
-	int v_next;      //进入
-	int bandwith;   //带宽 
-	int cost;        //单位成本
+	int v_next;      //Next Node
+	int bandwith;   //
+	int cost;        //
 };
 
-struct edgev_v            //边信息
+struct edgev_v            //Independent Edge Information
 {
 	int in;      
 	int out;      
-	int bandwith;   //带宽 
-	int cost;        //单位成本
-	int next=-1;       //
+	int bandwith;   
+	int cost;       
+	int next=-1;       
 };
 struct v_net
 {
 	int v_id;
-	bool is_consumer = false;         //是否连接消费节点
-	vector<edge>  edge_list;          //连接的边链表
+	bool is_consumer = false;         //Connetct With Consumer Node?
+	vector<edge>  edge_list;          //Edge List
 };
 struct v_consum
 {
 	int con_id;
-	int v_id;                    //连接的网络节点
-	int demand;                  //消费需求
+	int v_id;                    //Connected Net Node ID 
+	int demand;                  //Consume Demand
 };
 
 class GraphLinkedTable
@@ -40,34 +40,34 @@ class GraphLinkedTable
 	private:
 		vector<v_net> vertex;
 		vector<v_consum> consume;
-		int v_count;               //网络节点数量
-		int e_count;               //边数量
-		int c_count;               //消费节点数量
-		int ServerCost;            //服务器成本
+		int v_count;               //Net Node Num
+		int e_count;               //Edge Num
+		int c_count;               //Consumer Node Num
+		int ServerCost;            //Sver Cost
 	protected:
-		vector<edgev_v> vec_edge;      //所有边信息数组
-		vector<int> headEdge;           //每个节点的第一条边编号
+		vector<edgev_v> vec_edge;      //All the Edge Infomation
+		vector<int> headEdge;           //first Edge No of Vertex
 		int gHead[MAX_NODE_NUM];
-		int gEdgeCount;            //边数量自增
+		int gEdgeCount;            //edge No increase
 	public:
 		GraphLinkedTable();
 		~GraphLinkedTable(){}
 		void SetGraphPara(int v_n, int e_n, int c_n,int sc);  
-		void InsertEdge(int v1, int v2, int b, int c);       //插入边信息
-		void InsertEdgev_v(int v1, int v2, int b, int c);       //插入所有的边信息
-		void InsertConsume(int c, int v, int dem);           //插入消费节点信息
-		void PrintNetListInfo();                             //打印网络节点信息
-		void  PrintConNodeInfo();                             //打印消费节点信息
-		void PrintEdgeInfo();                                 //打印所有边信息
-		int GetEdgebw(int v1, int v2);                       //返回两节点之间的边带宽，如果两点之间不存在边，则返回0
-		int GetEdgecost(int v1, int v2);                     //返回两节点之间的单位成本，如果两点之间不存在边，则返回无穷大
-		vector<int> GetNeiborNode(int v);                    //返回相邻节点列表
-		int GetConLinkNode(int cv);                          //返回与消费节点相邻的网络节点，如果不存在该消费节点，则返回无穷大
-		int GetConDemand(int cv);                            //返回与消费节点的需求，如果不存在该节点，返回无穷大
-		int GetServerCost();                                 //返回服务器成本
-		int GetVNum();                                       //返回网络节点数量
-		int GetCNum();                                       //返回消费节点数量
-		int GetVEdge(int v);                                 //返回该网络节点的度
+		void InsertEdge(int v1, int v2, int b, int c);       //insert one edge information
+		void InsertEdgev_v(int v1, int v2, int b, int c);       //insert all edges infomation
+		void InsertConsume(int c, int v, int dem);           //insert consumer node information
+		void PrintNetListInfo();                             //print net node information
+		void  PrintConNodeInfo();                             //print consumer node information
+		void PrintEdgeInfo();                                 //print all edges' information
+		int GetEdgebw(int v1, int v2);                       //return bandwith between two nodes,if not exist,return 0
+		int GetEdgecost(int v1, int v2);                     //rreturn cost between two nodes,if not exist,return 0
+		vector<int> GetNeiborNode(int v);                    //return nextNodes
+		int GetConLinkNode(int cv);                          //return the net node id connected with consumer node,,if the id is not exist,return infinity
+		int GetConDemand(int cv);                            //return demand ofconsumer node,if the id is not exist,return infinity
+		int GetServerCost();                                 //return  Server Cost
+		int GetVNum();                                       //return the number of net node 
+		int GetCNum();                                       //return the number of consumer node
+		int GetVEdge(int v);                                 //Return Every node's degree
 		void GraphInit(char * topo[MAX_EDGE_NUM], int line_num);
 		stack<int> str_to_int(char *s);
 		int ReturnEdgeNo(int in,int out);                     //fanhui wangluojiedian d diyitiaobian bianhao
