@@ -1,1 +1,0 @@
-/usr/bin/c++    -O3 -Wall -std=c++11   CMakeFiles/cdn.dir/io.cpp.o CMakeFiles/cdn.dir/Topology.cpp.o CMakeFiles/cdn.dir/geneticAL.cpp.o CMakeFiles/cdn.dir/Init.cpp.o CMakeFiles/cdn.dir/cdn.cpp.o CMakeFiles/cdn.dir/deploy.cpp.o  -o /home/hadoop/project/HW/bin/cdn -rdynamic 
