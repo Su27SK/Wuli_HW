@@ -4,6 +4,7 @@
 #include<cstring>
 #include<limits.h>
 #include<stack>
+#include<unordered_map>
 #include"Init.h"
 using namespace std;
 
@@ -61,7 +62,7 @@ void GraphLinkedTable::InsertEdgev_v(int v1, int v2, int b, int c)
 void GraphLinkedTable::PrintEdgeInfo()
 {
 	size_t i;
-	cout<<"下面打印边信息："<<endl;
+	cout<<"No Print Edge Information："<<endl;
 	for( i=0;i<vec_edge.size();i++)
 	{	cout<<vec_edge[i].in<<'\t'<<vec_edge[i].out<<'\t';
 		cout<<vec_edge[i].bandwith<<'\t'<<vec_edge[i].cost<<endl;
@@ -81,7 +82,7 @@ void GraphLinkedTable::InsertConsume(int c, int v, int dem)
 
 void GraphLinkedTable::PrintNetListInfo()
 {
-	cout << "下面打印网络节点信息：" << endl;
+	cout << "Now Print Net Node Information：" << endl;
 	for (int i = 0; i < v_count; i++)
 	{
 		for (size_t j = 0; j < vertex[i].edge_list.size(); j++)
@@ -96,7 +97,7 @@ void GraphLinkedTable::PrintNetListInfo()
 
 void GraphLinkedTable::PrintConNodeInfo()
 {
-	cout << "下面打印消费节点信息：" << endl;
+	cout << "Now Print NConsumer Node Information：" << endl;
 	for (int i = 0; i < c_count; i++)
 	  cout << consume[i].con_id << "\t" << consume[i].v_id << "\t" << consume[i].demand << endl;
 	cout << endl;
@@ -233,6 +234,38 @@ int GraphLinkedTable::ReturnEdgeNo(int in,int out)
 	return -1;
 }
 
+void GraphLinkedTable::PrintInd_netNodes()
+{
+	cout<<endl<<"Now the net node list of unconnectted with key comsumer nodes:"<<endl;
+	for(int i=0;i<c_count;i++)
+	{
+		cout<<"consumer node id:"<<i<<endl;
+		for(int j=0;j<Ind_netNodes[i].size();j++)
+		{
+			cout<<Ind_netNodes[i][j]<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+
+void GraphLinkedTable::makeInd_netNodes()
+{
+	vector <int> nnode;
+	for(int i=0;i<c_count;i++)
+	{
+		nnode.clear();
+		for(int j=0;j<v_count;j++)
+		{
+			if(j==consume[i].v_id)
+				continue;
+			nnode.push_back(j);
+		}
+		Ind_netNodes[i]=nnode;
+	}
+}
+
+
 void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 {
 	char str[30];
@@ -242,7 +275,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 	{
 		strcpy(str, topo[cur_lnum]);
 		in = str_to_int(str);
-		int vn, en, cn;//输入GraphLinkedTable各参数信息
+		int vn, en, cn;
 		cn = in.top();
 		in.pop();
 		en = in.top();
@@ -251,14 +284,14 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 		in.pop();
 
 
-		cur_lnum++;                  //空行
+		cur_lnum++;                  
 		cur_lnum++;
 		strcpy(str, topo[cur_lnum]);
 		SetGraphPara(vn, en, cn,atoi(str));
-		cur_lnum++;                  //空行
+		cur_lnum++;                  
 		int bid, eid, bw, netcost;
 		cur_lnum++;
-		strcpy(str, topo[cur_lnum]);          //第一条边信息
+		strcpy(str, topo[cur_lnum]);          
 		in = str_to_int(str);
 		while (in.size() == 4)
 		{
@@ -270,11 +303,11 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 			in.pop();
 			bid = in.top();
 			in.pop();
-			InsertEdge(bid, eid, bw, netcost);//插入边信息
+			InsertEdge(bid, eid, bw, netcost);
 			InsertEdgev_v(bid, eid, bw, netcost);
 			InsertEdgev_v(eid, bid, bw, netcost);
 			cur_lnum++;
-			strcpy(str, topo[cur_lnum]);        //下一条边信息
+			strcpy(str, topo[cur_lnum]);        
 			in = str_to_int(str);
 		}
 
@@ -284,7 +317,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 		while (curcv<c_count)
 		{
 			cur_lnum++;
-			strcpy(str, topo[cur_lnum]);           //第一个消费节点信息
+			strcpy(str, topo[cur_lnum]);          
 			in = str_to_int(str);
 			dint = in.top();
 			in.pop();
@@ -292,7 +325,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 			in.pop();
 			cid = in.top();
 			in.pop();
-			InsertConsume(cid, lwid, dint);//插入消费节点信息
+			InsertConsume(cid, lwid, dint);
 			curcv++;
 		}
 		cur_lnum++;
@@ -301,6 +334,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 	{
 		headEdge.push_back(ReturnEdgeNo(i,vertex[i].edge_list[0].v_next));
 	}
+	makeInd_netNodes();
 }
 
 

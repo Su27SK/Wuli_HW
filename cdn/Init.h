@@ -3,6 +3,7 @@
 #include<fstream>
 #include<cstring>
 #include<stack>
+#include<unordered_map>
 using namespace std;
 #define MAX_EDGE_NUM    (2000 * 20)
 #define MAX_NODE_NUM    1600
@@ -43,12 +44,13 @@ class GraphLinkedTable
 		int v_count;               //Net Node Num
 		int e_count;               //Edge Num
 		int c_count;               //Consumer Node Num
-		int ServerCost;            //Sver Cost
+		int ServerCost;            //Server Cost
 	protected:
 		vector<edgev_v> vec_edge;      //All the Edge Infomation
 		vector<int> headEdge;           //first Edge No of Vertex
 		int gHead[MAX_NODE_NUM];
 		int gEdgeCount;            //edge No increase
+		unordered_map<int,vector<int>>  Ind_netNodes;//Net node ID not connected with the comsumer node
 	public:
 		GraphLinkedTable();
 		~GraphLinkedTable(){}
@@ -73,6 +75,8 @@ class GraphLinkedTable
 		stack<int> str_to_int(char *s);
 		int ReturnEdgeNo(int in,int out);                     //return the No of net node
 		void PrintHeader();                                    //Print first Edge No of One Node
+		void makeInd_netNodes();                               //make unordered map of net node list of not connected with the key comsumer node
+		void PrintInd_netNodes();                              //test makeInd_netNodes()
 };
 
 
