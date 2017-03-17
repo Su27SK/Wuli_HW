@@ -153,7 +153,18 @@ int Topology::minCostFlow(vector<int> deploy, vector<vector<int>>& path)
 		return -1;
 	}
 	int cost = _minCostFlow(_virtualSource, _virtualSink, path);
-	//cout<<"minCost:"<<cost<<endl;
+	unordered_map<int, int> existed;
+	int count = 0;
+	for (int i = 0; i < path.size(); i++) {
+		if (existed.count(path[i][0]) == 0) {
+			existed[path[i][0]]  = 1;
+			count++;
+		}
+	}
 	_reset(deploy);
-	return cost == 0 ? INT_MAX: cost;
+	if (cost == 0) {
+		return INT_MAX;
+	} else {
+		return cost + GetServerCost() * count;
+	}
 }
