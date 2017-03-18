@@ -142,10 +142,11 @@ void Topology::init()
  *
  * @param {vector<int>} deploy
  * @param {vector<vector<int>>} path
+ * @param {vector<int>} exist
  *
  * @return {interge}
  */
-int Topology::minCostFlow(vector<int> deploy, vector<vector<int>>& path)
+int Topology::minCostFlow(vector<int> deploy, vector<vector<int>>& path, vector< int>& exist)
 {
 	_init(deploy);
 	if (_virtualSource == -1 || _virtualSink == -1) {
@@ -154,17 +155,17 @@ int Topology::minCostFlow(vector<int> deploy, vector<vector<int>>& path)
 	}
 	int cost = _minCostFlow(_virtualSource, _virtualSink, path);
 	unordered_map<int, int> existed;
-	int count = 0;
 	for (int i = 0; i < path.size(); i++) {
 		if (existed.count(path[i][0]) == 0) {
 			existed[path[i][0]]  = 1;
-			count++;
+			exist.push_back(path[i][0]);
 		}
 	}
 	_reset(deploy);
 	if (cost == 0) {
 		return INT_MAX;
 	} else {
-		return cost + GetServerCost() * count;
+		//return cost + GetServerCost() * count;
+		return cost;
 	}
 }

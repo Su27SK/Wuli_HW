@@ -35,6 +35,6 @@ class Topology:public GraphLinkedTable
 			_maxDemand = 0;
 		}
 		void init();
-		int minCostFlow(vector<int> deploy, vector<vector<int>>& path);
+		int minCostFlow(vector<int> deploy, vector<vector<int>>& path, vector<int>& exist);
 };
 #endif
