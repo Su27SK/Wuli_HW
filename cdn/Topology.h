@@ -31,10 +31,15 @@ class Topology:public GraphLinkedTable
 			GraphLinkedTable();
 			_virtualSource = -1;
 			_virtualSink = -1;
-		    _originEdgeNums = 0;
+			_originEdgeNums = 0;
 			_maxDemand = 0;
 		}
 		void init();
 		int minCostFlow(vector<int> deploy, vector<vector<int>>& path, vector<int>& exist);
+
+		void initializePreflow(int s);
+		void push(int u, int v);
+		void relabel(int u);
+		void maxflow(int s, int t);
 };
 #endif

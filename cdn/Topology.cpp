@@ -169,3 +169,108 @@ int Topology::minCostFlow(vector<int> deploy, vector<vector<int>>& path, vector<
 		return cost;
 	}
 }
+
+/**
+ * @brief initializePreflow 
+ *
+ * @param {interge} s
+ */
+void Topology::initializePreflow(int s)
+{
+	memset(h, 0, sizeof(int) * n);
+	h[s] = n;
+	memset(e, 0, sizeof(int) * n);
+	for (int i = n - 1; i >= 0; i--) {
+		memset(f[i], 0, sizeof(int) * n);
+	}
+	for (int eId = gHead[s]; eId != -1; eId = vec_edge[eId].next) {
+		int v = vec_edge[eId].out;
+		e[v] = vec_edge[eId].bandwith;
+		e[s] -= vec_edge[eId].bandwith;
+	}
+}
+
+/**
+ * @brief push 
+ *
+ * @param {interge} u
+ * @param {interge} v
+ */
+void Topology::push(int u, int v) 
+{
+	for (int eId = gHead[u]; eId != -1; eId = vec_edge[eId].next) {
+		if (vec_edge[eId].out == v) {
+			int temp = min(e[u], vec_edge[eId].bandwith);
+			e[u] = e[u] - temp;
+			e[v] = e[v] + temp;
+			vec_edge[eId].bandwith -=temp;
+			vec_edge[eId ^ 1].bandwith += temp;
+			break;
+		}
+	}
+}
+
+/**
+ * @brief relabel 
+ *
+ * @param {interge} u
+ */
+void Topology::relabel(int u)
+{
+	int temp = -1;
+	for (int eId = gHead[u]; eId != -1; eId = vec_edge[eId].next) {
+		if (vec_edge[eId].bandwith > 0) {
+			if (temp == -1 || temp > h[vec_edge[eId].out]) {
+				temp = h[v];
+			}
+		}
+	}
+	h[u] = 1 + temp;
+}
+
+/**
+ * @brief maxflow 
+ *
+ * @param {interge} s
+ * @param {interge} t
+ */
+void Topology::maxflow(int s, int t)
+{
+	initializePreflow();
+	queue<int> q;
+	char *l = new char[n];
+	int u, v, m;
+	memset(l, 0, sizeof(char) * n);
+	for (int eId = gHead[s]; eId != -1; eId = vec_edge[eId].next) {
+		if (vec_edge[eId].out != t) {
+			q.push(vec_edge[eId].out);
+			l[vec_edge[eId].out] = 1;
+		}
+	}
+	while (q.size() != 0) {
+		u = q.front();
+		m = -1;
+		for (int eId = gHead[u]; eId != -1; eId = vec_edge[eId].next) {
+			v = vec_edge[eId].out;
+			if (vec_edge[eId].bandwith > 0) {
+				if (h[u] > h[v]) {
+					push(u, v);
+					if (l[v] == 0 && v != s && v != t) {
+						l[v] = 1;					
+						q.push(v);
+					}
+				} else if (m == -1) {
+					m = h[v];
+				} else {
+					m = min(m, h[v]);
+				}
+			}
+		}
+		if (e[u] != 0) {
+			h[u] = 1 + m;
+		} else {
+			l[u] = 0;
+			q.pop();
+		}
+	}
+}
