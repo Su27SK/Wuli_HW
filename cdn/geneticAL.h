@@ -5,49 +5,70 @@
 #include <unordered_map>
 #include <vector>
 #include "Topology.h"
+#include "cluster.h"
 //#include <boost/functional/hash.hpp>
+
+#define INIT_Min 0x7fffffff
 
 using namespace std;
 
-typedef struct Chrom{
-    short int bit[1000]; 
-    int fit;            
-    double rfit;        
-    double cfit;        
-                       
-}chrom;
+typedef struct PositionGene{
+    bool bit[1000]; 
+    int fit;                                   
+}PositionGene;
 
-//template <typename Container> // we can make this generic for any container [1]
-/*struct container_hash {
+static long long PowPow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000};
+
+struct container_hash {
     std::size_t operator()(const vector<int> & c) const {
-        return boost::hash_range(c.begin(), c.end());
+	int size = c.size()>10?10:c.size();
+	long long key = 0;
+	for(int i = 0; i < size; i++){
+		key += c[i]*PowPow10[i];
+	}
+        return key;
     }
-};*/
+};
 
 class GA{
     public:
 	Topology T;
         int nodeNum;
         int iteration;
-        GA(Topology T, int iteration){
+	bool maxPos[1000];
+	int minCostValue;
+	int initNum;
+	int maxPosNum;
+	int cross1;
+	int cross2;
+	int mu1;
+	int mu2;
+        GA(Topology T, int iteration, int initNum, int maxPosNum){
 		this->T = T;
 		this->nodeNum = T.GetVNum();
 		this->iteration = iteration;
-		cout << this->nodeNum << endl;
-		cout << this->iteration << endl;	
+		this->initNum = initNum;
+		this->maxPosNum = maxPosNum;
+		minCostValue = INIT_Min;
+		maxPosNum = maxPosNum;
+		cross1 = 0;
+		cross2 = 0;
+		mu1 = 0;
+		mu2 = 0;
+		//cout << this->nodeNum << endl;
+		//cout << this->iteration << endl;	
 	};
-	//unordered_map<vector<int>, int, container_hash> hashFit;
-	//unordered_map<vector<int>, vector<int>, container_hash> hashPath;
-        vector<vector<int>> getBestServersPos(int num);
+	unordered_map<vector<int>, int, container_hash> hashFit;
+	unordered_map<vector<int>, vector<int>, container_hash> hashTemp;
+        vector<vector<int>> getBestServersPos(int &cost);
     private:
-
-        void *evpop(chrom* popcurrent, int num);         
-        vector<int> x(chrom popcurrent);                
-        int y(vector<int> x);
-        //void *pickchroms(chrom* popcurrent, int initNum);    
-        void *pickchroms_new(chrom* popcurrent, chrom* popnext, int initNum);
-        void *crossover(chrom* popnext, int initNum);        
-        void *mutation(chrom* popnext, int initNum);         
-        //chrom* popcurrent;                      
-        //chrom* popnext;                         
+	int sumCost = 0;
+	vector<int> rouletteSelect(PositionGene* current, int count, int start, int end);
+	void code(vector<int> num, PositionGene& current);
+        void *evpop(PositionGene* popcurrent);         
+        vector<int> decode(PositionGene popcurrent);                
+        int calCost(vector<int> x, PositionGene& current);
+        void *crossoverMethod(PositionGene* popnext, int count);        
+        void *mutationMethod(PositionGene* popnext, int count); 
+	void singleMutation(bool* bit);                            
 };

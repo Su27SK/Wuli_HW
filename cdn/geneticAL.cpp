@@ -3,69 +3,75 @@
 #include "geneticAL.h"
 #include <algorithm>
 
-#define INIT_Min 0x7fffffff
 
 using namespace std;
 
-bool comparison(Chrom a, Chrom b)
+
+
+bool comparison(PositionGene a, PositionGene b)
 {
 	return a.fit<b.fit;
 }
 
-vector<vector<int>> GA::getBestServersPos(int initNum)
+vector<vector<int>> GA::getBestServersPos(int & cost)
 {
-	chrom* popcurrent = new struct Chrom[initNum];
-	chrom* popnext = new struct Chrom[initNum];
-
-    T.PrintConNodeInfo();
-	int i ,j, l,Min;
-	Min=INIT_Min;                                      
+	double start, stop;
+	start = clock();
+	PositionGene* current = new struct PositionGene[maxPosNum];
+	int i ,j, l;                                     
 	vector<int> k;	
-
+	//cout << "start" << endl;
+	int MaxCount = 1000;
+	int minCount = 500;
+	int count = 0;
 	srand(time(0));
-	evpop(popcurrent, initNum);	
-	sort(popnext, popnext+initNum, comparison);
-
-	Min = popcurrent[0].fit;
+	evpop(current);	
+	sort(current, current+initNum, comparison);
+	minCostValue = current[0].fit;
+	cout << "initNum is " << initNum;
+	cout << "max pos " << maxPosNum << endl;
+	//cout << "evpop" << endl;
+	//Min = current[0].fit;
 
 	
 	for(i =0;i< this->iteration;i++)                        
-	{
+	{            
+		stop = clock();
+		if(((double)(stop-start))/CLOCKS_PER_SEC > 89){
+			cout << "程序耗时:" << ((double)(stop-start))/CLOCKS_PER_SEC << "s\n\n\n" << endl;
+			break;			
+		}	
+		//	cout << i << "min is " << Min << endl;  
+		printf("%fs\t%d\t%d\t%d\t%d\t%f\n", (double)(stop-start)/CLOCKS_PER_SEC, i, minCostValue, initNum, current[initNum-1].fit, log(count * 2.0 / iteration*3 + 1));
+		crossoverMethod(current, i);
+		mutationMethod(current, i);                
+		sort(current, current+initNum, comparison);
 
-		for(j =0;j<initNum; j++)
-		{
-			popnext[j]=popcurrent[j];           
+		if(current[0].fit == minCostValue){
+			count++;	
 		}
-		//pickchroms(popnext, initNum);
-		//pickchroms_new(popcurrent, popnext, initNum);                    
-
-		crossover(popnext, initNum);                     
-		sort(popnext, popnext+initNum, comparison);
-		mutation(popnext, initNum);                      
-		sort(popnext, popnext+initNum, comparison);
-
-		for(j =0;j<initNum; j++) 
-		{
-			//cout << "popnext " << j << " \nbit is " << x(popnext[j]) << "\nfit is " << popnext[j].fit << endl;
-			popcurrent[j]=popnext[j];             
+		else if(current[0].fit < minCostValue){
+			
+			minCostValue = current[0].fit;
+			count = 0;
 		}
-
+		
+		if(count > MaxCount && i > minCount) break;
 	}  
-
-	for(l =0;l<initNum; l++)
-	{
-		if(popcurrent[l].fit < Min)
-		{
-			Min=popcurrent[l].fit;
-			k = x(popcurrent[l]);
-		}
-
-	}
+	cout << "i is " << i << "cross1 " << cross1 << "\tcross2 " << cross2 << "\tmu1 " << mu1 << "\tmu2 " << mu2 << endl;
+	//sort(current, current+initNum, comparison);
+	k = decode(current[0]);
 
 	vector<vector<int>> route;
 	vector<vector<int>>& path = route;
 
-	int cost = T.minCostFlow(k, path); 
+	
+
+	vector<int> exists;
+	T.minCostFlow(k, path, exists); 
+
+	cost = calCost(k, current[l-2]);
+
 	if( cost > INT_MAX - 100){
 		vector<vector<int>> a;
 		return a;
@@ -76,53 +82,50 @@ vector<vector<int>> GA::getBestServersPos(int initNum)
 
 }
 
-void *GA::evpop(chrom* popcurrent, int initNum)   
+void *GA::evpop(PositionGene* current)   
 {
+	
 	int i ,j;
-	int random ;
-	double sum=0;
-	int pro = T.GetVNum() / T.GetCNum();
-	int middle = pro / 2;
-	//cout << "V num is " << T.GetVNum() << "\nc num is " << T.GetCNum() << "\npro is " << pro << "\nmiddle is " << middle << endl;
 	for(j =0;j<initNum; j++)                           
 	{	
-		//cout << "init num is " << j << endl;
+		generateGene:
 		for(i =0;i<this->nodeNum; i++)                       
-		{
-			random=rand ();                     
-			random=(random % pro);                 
-			//cout << "random is " << random << endl;
-			popcurrent[j].bit[i]= random == middle?1:0;       
+		{               
+			current[j].bit[i]= (rand() % 2)?true:false;       
 		}  
-
-		popcurrent[j].fit= y(x(popcurrent[j])); 		
-		sum = sum + popcurrent[j].fit;
-		//cout << "popcurrent " << j << " \nbit is " << x(popcurrent[j ]) << "\nfit is " << popcurrent[j ].fit << endl;
-
+		if(hashTemp.find(decode(current[j])) != hashTemp.end()){
+			goto generateGene;
+		}
+		current[j].fit= calCost(decode(current[j]), current[j]);
+		 
+		if(current[j].fit < minCostValue) {
+			memcpy(maxPos, current[j].bit, nodeNum);
+			minCostValue = current[j].fit;
+		}
 	}
 	
-	for (j = 0; j < initNum; j++)
-	{
-		popcurrent[j].rfit = popcurrent[j].fit/sum;
-		popcurrent[j].cfit = 0;
-	}
 	return(0);                
 }            
 
-vector<int> GA::x(chrom popcurrent)  
+vector<int> GA::decode(PositionGene current)  
 {
 
 	vector<int> selectNode;
 	for(int i = 0; i < this->nodeNum; i++){
-		if(popcurrent.bit[i]){
+		if(current.bit[i]){
 			selectNode.push_back(i);
 		}
 	}
 	return selectNode;                           
 }                                     
 
-
-int GA::y(vector<int> x)
+void GA::code(vector<int> num, PositionGene& current){
+	memset(current.bit, 0, sizeof(short int) * this->nodeNum);
+	for(int i = 0; i < num.size(); i++){
+		current.bit[num[i]] = true;
+	}
+}
+int GA::calCost(vector<int> x, PositionGene& current)
 {
 	if(x.empty()){
 		return INIT_Min;
@@ -130,149 +133,187 @@ int GA::y(vector<int> x)
 	int cost = INIT_Min;
 	vector<vector<int>> route;
 	vector<vector<int>>& path = route;
-	cost = T.minCostFlow(x, path);
-	if(cost != INIT_Min){
-		cost += T.GetServerCost() * x.size();
-	}
-	
-	/*if(hashFit.find(x) == hashFit.end()) {	
+	vector<int> exists;
+	if(hashTemp.find(x) == hashTemp.end()) {	
 		
-		cost = T.minCostFlow(x, path);
+		cost = T.minCostFlow(x, path, exists);
 		if(cost != INIT_Min){
-			cost += T.GetServerCost() * x.size();
+			cost += T.GetServerCost() * exists.size();
+			code(exists, current);
 		}
-
-		//hashFit[x] = cost;
+		hashTemp[x] = exists;
+		hashTemp[exists] = exists;
+		hashFit[exists] = cost;
 
 	}
 	else  {
-		//cost = hashFit[x];
-		cost = T.minCostFlow(x, path);
-	}*/
-	return(cost);             
+		cost = hashFit[hashTemp[x]];
+	}
+	return(cost);            
 } 
 
+                                   
 
-void *GA::pickchroms_new (chrom* popcurrent, chrom* popnext, int initNum)
-{
-	int men;
-	int i;int j;
-	double p;
-	double sum=0.0;
-	//find the total fitness of the population
-	for (men = 0; men < initNum; men++ )
-	{
-		sum = sum + 1 / popnext[men].fit;
-	}
-	//calculate the relative fitness of each member
-	for (men = 0; men < initNum; men++ )
-	{
-		popnext[men].rfit = (1/popnext[men].fit) / sum;
-	}
-	//calculate the cumulative fitness,
-	popcurrent[1].cfit = popcurrent[1].rfit;
-	for ( men = 1; men < initNum; men++)
-	{
-		popnext[men].cfit = popnext[men-1].cfit + popnext[men].rfit;
-	}
+vector<int> GA::rouletteSelect(PositionGene* current, int count, int start, int end){
+	int sum = 0;
+	double lastSum = 0;
+	double rate;
+	int N = 400;
+	vector<int> select;
 
-	for ( i = 1; i < initNum; i++ )
-	{
-		
-		p =rand()%10;//
-		p = p/10;
-		if ( p < popnext[0].cfit )
-		{
-			popcurrent[i] = popnext[0];      
-		}
-		else
-		{
-			for ( j = 0; j < initNum; j++ )
-			{ 
-				if ( popnext[j].cfit <= p && p < popnext[j+1].cfit )
-				{
-					popcurrent[i] = popcurrent[j+1];
-				}
+	int allSum = 0;
+	for(int i = start; i < end; i++){
+		allSum += log(current[i].fit);
+	}
+	for(int j = 0; j < count; j++){
+		double random = rand()%(N+1)/(float)(N+1);
+		sum = 0;
+		lastSum = 0;
+		for(int i = start; i < end; i++){
+			sum += 	log(current[i].fit);	
+			
+			rate = (1.0*sum)/allSum;
+			if(random >= lastSum && random < (1.0*sum)/allSum){
+				select.push_back(i);
+				break;
 			}
+			
+			lastSum = rate;
 		}
+		
 	}
-	//  Overwrite the old population with the new one.
-	//
-	for ( i = 0; i < initNum; i++ )
-	{
-		popnext[i] = popcurrent[i]; 
-	}
-	return(0);
+	return select;
 }
 
+/**
+*	new crossoverMethod based rouletteSelect
+**/
 
-void *GA::crossover (chrom* popnext, int initNum)             
-{
-
-	int random ;
-	int i;
-	random=rand ();                             
-	int subCross = random % initNum;
-	random=(random %this->nodeNum);                   
-	for(i =0;i< random;i ++)                   
-	{
-		popnext[initNum - 1].bit [i]= popnext[0].bit [i];   // child 1 cross over
-		popnext[initNum - 2].bit [i]= popnext[1].bit [i];   // child 2 cross over
-		popnext[initNum - 3].bit [i]= popnext[0].bit [i];   // child 1 cross over
-		popnext[initNum - 4].bit [i]= popnext[subCross].bit [i];   // child 2 cross over
+void GA::singleMutation(bool* bit){
+	int num = rand() % 10;
+	int random;
+	for(int i = 0; i < num; i++){
+		random = rand() % this->nodeNum;
+		bit[random]=bit[random]?0:1;
 	}
+}
 
-	for(i =random; i<this->nodeNum;i ++)                      // crossing the bits beyond the cross point index
-	{
-		popnext[initNum - 1].bit [i]= popnext[1].bit [i];    // child 1 cross over
-		popnext[initNum - 2].bit [i]= popnext[0].bit [i];    // chlid 2 cross over
-		popnext[initNum - 3].bit [i]= popnext[subCross].bit [i];   // child 1 cross over
-		popnext[initNum - 4].bit [i]= popnext[0].bit [i];   // child 2 cross over
-	}  
-
-	for(i =initNum - 2;i<initNum; i++)
-	{
-		popnext[i].fit= y(x(popnext[i]));        
-	}
-
-	return(0);
-}                                          
-
-void *GA::mutation (chrom* popnext, int initNum)            
+void *GA::crossoverMethod (PositionGene* current, int count)             
 {
-	int random ;
-	int row ,col;
-	//srand(time(0)); 
-	random=rand()%50;  
+	double randomRate = rand()%(400+1)/(float)(400+1);
+	if( initNum < maxPosNum - 4){
+		int crossNum = 3;
+		vector<int> select = rouletteSelect(current, 2 * crossNum - 1, 0, initNum/3);
+		initNum += 2 * crossNum;
+		int index1 = 0;
+		int index2 = 0;
+		for(int i = 0; i < crossNum - 1; i++){
+			int random=(rand () %this->nodeNum);
+			index1 = initNum - 2 * i - 1;
+			index2 = initNum - 2 * i - 2;
+			memcpy(current[index1].bit, current[2*i].bit, sizeof(bool) * random);
+			memcpy(current[index1].bit + random, current[select[2 * i + 1]].bit + random,(this->nodeNum - random));
+			
 
-	//
-	if(random == 25)                             
-	{
-		col=rand()%this->nodeNum;                            
-		row=rand()%(initNum - 2) + 2;                            
+			memcpy(current[index2].bit, current[select[2 * i + 1]].bit, random);
+			memcpy(current[index2].bit + random, current[2*i].bit + random,(this->nodeNum - random));
 
-		popnext[row].bit[col] = popnext[row].bit[col]==0?1:0;
-		popnext[row].fit= y(x(popnext[row]));     
+			while(hashTemp.find(decode(current[index1])) != hashTemp.end())	singleMutation(current[index1].bit);
+			while(hashTemp.find(decode(current[index2])) != hashTemp.end())	singleMutation(current[index2].bit);
+			
+			
+			current[index1].fit = calCost(decode(current[index1]), current[index1]); 
+			current[index2].fit = calCost(decode(current[index2]), current[index2]); 
+		}
+
+		int random=(rand () %this->nodeNum);
+		index1 = initNum - 2 * crossNum + 1;
+		index2 = initNum - 2 * crossNum;
+		int firstRow = rand() % 5;
 		
-	}                                          
+		memcpy(current[index1].bit, current[firstRow].bit,random);
+		memcpy(current[index1].bit + random, current[select[crossNum]].bit + random, (this->nodeNum - random));
+		while(hashTemp.find(decode(current[index1])) != hashTemp.end())	singleMutation(current[index1].bit);
+		current[index1].fit = calCost(decode(current[index1]), current[index1]); 
 
+		memcpy(current[index2].bit, current[select[crossNum]].bit,random);
+		memcpy(current[index2].bit + random, current[firstRow].bit + random,(this->nodeNum - random));
+		while(hashTemp.find(decode(current[index2])) != hashTemp.end())	singleMutation(current[index2].bit);
+		current[index2].fit = calCost(decode(current[index2]), current[index2]); 
+	}
+	else{	// 
+		
+		int random=(rand () %this->nodeNum);
+		vector<int> select = rouletteSelect(current, 2, 0, initNum/2);
+		struct PositionGene member1, member2;
+		memcpy(member1.bit, current[select[0]].bit, random);
+		memcpy(member1.bit + random, current[select[1]].bit + random, (this->nodeNum - random));
+		while(hashTemp.find(decode(member1)) != hashTemp.end())	singleMutation(member1.bit);
+		
+		memcpy(member2.bit, current[select[1]].bit,random);
+		memcpy(member2.bit + random, current[select[0]].bit + random, (this->nodeNum - random));
+		while(hashTemp.find(decode(member1)) != hashTemp.end())	singleMutation(member2.bit);
 
+		member1.fit = calCost(decode(member1), member1); 
+		member2.fit = calCost(decode(member2), member2); 
+		if(member1.fit < minCostValue || member2.fit < minCostValue) cross1++;
+		
+		current[initNum - 1]= member1;
+		current[initNum - 2]= member2; 
 
+		random=(rand () %this->nodeNum);
+		int first = rand() % 10;
+		select = rouletteSelect(current, 1, initNum/3, initNum/2);
+		int index1 = first;
+		int index2 = select[0];
+		memcpy(member1.bit, current[index1].bit, random);
+		memcpy(member1.bit + random, current[index2].bit + random,(this->nodeNum - random));
+		while(hashTemp.find(decode(member1)) != hashTemp.end())	singleMutation(member1.bit);
+		
+		memcpy(member2.bit, current[index2].bit, random);
+		memcpy(member2.bit + random, current[index1].bit + random,  (this->nodeNum - random));
+		while(hashTemp.find(decode(member2)) != hashTemp.end())	singleMutation(member2.bit);
+
+		member1.fit = calCost(decode(member1), member1); 
+		member2.fit = calCost(decode(member2), member2); 
+		if(member1.fit < minCostValue || member2.fit < minCostValue) cross2++;
+		current[initNum - 3]= member1;
+		current[initNum - 4]= member2; 
+	}
 	
-	col=rand()%this->nodeNum;                            
-	row=rand()%4;                           
-	popnext[initNum-1].bit[col] = popnext[initNum-1].bit[col]==0?1:0;     
-	popnext[initNum-1].fit = y(x(popnext[initNum-1]));
+    return(0);	
+}
 
-	if(random > 40)                              
+/**
+*	mutation based on rouletteSelect()
+**/
+void *GA::mutationMethod (PositionGene* current, int count){
+	double randomRate = rand()%(400+1)/(float)(400+1);
+	int col;
+	/*if(randomRate <  1)                             
 	{
+		col=rand()%this->nodeNum;                       
+		vector<int> select = rouletteSelect(current, 1, 4, initNum);	
+		current[select[0]].bit[col] = current[select[0]].bit[col]?0:1;
+		while(hashTemp.find(decode(current[select[0]])) != hashTemp.end())	singleMutation(current[select[0]].bit);
+		current[select[0]].fit= calCost(decode(current[select[0]]), current[select[0]]);   
+		if(current[select[0]].fit < minCostValue) mu1++;
+	}*/
+	randomRate = rand()%(400+1)/(float)(400+1);
+	if(randomRate < 1){
+		int row = initNum<maxPosNum?initNum++:initNum - 5;
+		vector<int> select = rouletteSelect(current,  1, 0, initNum/5);	
+		int mutateNum = rand()%5;
+		memcpy(current[row].bit, current[select[0]].bit,this->nodeNum);
+		for(int i = 0; i < mutateNum; i++){
+			col = rand() % (this->nodeNum);
+			current[row].bit[col] = current[row].bit[col]?0:1;
+		} 	
+		while(hashTemp.find(decode(current[row])) != hashTemp.end())	singleMutation(current[row].bit);
+		current[row].fit= calCost(decode(current[row]), current[row]); 
+		if(current[row].fit < minCostValue) mu2++;
 		
-		col=rand()%this->nodeNum;                            
-		row=rand()%(initNum / 3);                            
-
-		popnext[initNum-2].bit[col] = popnext[row].bit[col]==0?1:0;
-		popnext[initNum-2].fit= y(x(popnext[row]));    
 	}
 
 	return(0);
-}   
+}

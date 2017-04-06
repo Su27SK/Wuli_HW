@@ -4,7 +4,6 @@
 #include<cstring>
 #include<limits.h>
 #include<stack>
-#include<unordered_map>
 #include"Init.h"
 using namespace std;
 
@@ -31,6 +30,7 @@ void GraphLinkedTable::SetGraphPara(int v_n, int e_n, int c_n,int sc)
 		v.v_id = i;
 		vertex.push_back(v);
 	}
+	consume.resize(c_n);
 }
 
 
@@ -46,6 +46,16 @@ void GraphLinkedTable::InsertEdge(int v1, int v2, int b, int c)
 }
 
 
+void GraphLinkedTable::InsertOneEdge(int v1, int v2, int b, int c)
+{
+	edge ed;
+	ed.v_next = v2;
+	ed.bandwith = b;
+	ed.cost = c;
+	vertex[v1].edge_list.push_back(ed);
+}
+
+
 void GraphLinkedTable::InsertEdgev_v(int v1, int v2, int b, int c)
 {
 	edgev_v ed;
@@ -56,15 +66,23 @@ void GraphLinkedTable::InsertEdgev_v(int v1, int v2, int b, int c)
 	ed.next = gHead[v1];
 	vec_edge.push_back(ed);
 	gHead[v1] = gEdgeCount++;
+
+	ed.in = v2;
+	ed.out = v1;
+	ed.bandwith = 0;
+	ed.cost = -c;
+	ed.next = gHead[v2];
+	vec_edge.push_back(ed);
+	gHead[v2] = gEdgeCount++;
 }
 
 
 void GraphLinkedTable::PrintEdgeInfo()
 {
 	size_t i;
-	cout<<"No Print Edge Information："<<endl;
+	cout<<"print ege information："<<endl;
 	for( i=0;i<vec_edge.size();i++)
-	{	cout<<vec_edge[i].in<<'\t'<<vec_edge[i].out<<'\t';
+	{	cout<<"i:"<<i<<" "<<vec_edge[i].in<<'\t'<<vec_edge[i].out<<'\t';
 		cout<<vec_edge[i].bandwith<<'\t'<<vec_edge[i].cost<<endl;
 	}
 }
@@ -76,13 +94,13 @@ void GraphLinkedTable::InsertConsume(int c, int v, int dem)
 	co.con_id = c;
 	co.v_id = v;
 	co.demand = dem;
-	consume.push_back(co);
+	consume[c]=co;
 }
 
 
 void GraphLinkedTable::PrintNetListInfo()
 {
-	cout << "Now Print Net Node Information：" << endl;
+	cout << "print network node information：" << endl;
 	for (int i = 0; i < v_count; i++)
 	{
 		for (size_t j = 0; j < vertex[i].edge_list.size(); j++)
@@ -97,7 +115,7 @@ void GraphLinkedTable::PrintNetListInfo()
 
 void GraphLinkedTable::PrintConNodeInfo()
 {
-	cout << "Now Print NConsumer Node Information：" << endl;
+	cout << "print consume node information：" << endl;
 	for (int i = 0; i < c_count; i++)
 	  cout << consume[i].con_id << "\t" << consume[i].v_id << "\t" << consume[i].demand << endl;
 	cout << endl;
@@ -169,6 +187,15 @@ int  GraphLinkedTable::GetConLinkNode(int cv)
 	return consume[cv].v_id;
 }
 
+vector<int> GraphLinkedTable::GetAllConLinkNode()
+{
+	vector<int> vcon;
+		for(size_t i=0;i<c_count;i++)
+		{
+			vcon.push_back(GetConLinkNode(i));
+		}
+		return vcon;
+}
 
 
 int GraphLinkedTable::GetNetLinkNode(int nv)
@@ -180,6 +207,7 @@ int GraphLinkedTable::GetNetLinkNode(int nv)
 	}
 		return INT_MAX;
 }
+
 
 int  GraphLinkedTable::GetConDemand(int cv)
 {
@@ -197,19 +225,43 @@ int GraphLinkedTable::GetServerCost()
 
 int GraphLinkedTable::GetVNum()
 {
-	return v_count;
+	//int count = 0;
+	//for (int i = 0; i < vertex.size(); i++) {
+		//if (vertex[i].v_id != -1) {
+			//count++;
+		//}
+	//}
+	//return count++;
+	return vertex.size();
 }
 
 
 int GraphLinkedTable::GetCNum()
 {
-	return c_count;
+	int count = 0;
+	for (int i = 0; i < consume.size(); i++) {
+		if (consume[i].con_id != -1) {
+			count++;
+		}
+	}
+	return count;
 }
 
 
 int GraphLinkedTable::GetVEdge(int v)
 {
 	return vertex[v].edge_list.size();
+}
+
+
+vector<int> GraphLinkedTable::GetAllDegree()
+{
+	vector<int> degree;
+	for(size_t i=0;i<v_count;i++)
+	{
+		degree.push_back(vertex[i].edge_list.size());
+	}
+	return degree;
 }
 
 
@@ -232,37 +284,6 @@ int GraphLinkedTable::ReturnEdgeNo(int in,int out)
 		i++;
 	}
 	return -1;
-}
-
-void GraphLinkedTable::PrintInd_netNodes()
-{
-	cout<<endl<<"Now the net node list of unconnectted with key comsumer nodes:"<<endl;
-	for(int i=0;i<c_count;i++)
-	{
-		cout<<"consumer node id:"<<i<<endl;
-		for(int j=0;j<Ind_netNodes[i].size();j++)
-		{
-			cout<<Ind_netNodes[i][j]<<" ";
-		}
-		cout<<endl;
-	}
-}
-
-
-void GraphLinkedTable::makeInd_netNodes()
-{
-	vector <int> nnode;
-	for(int i=0;i<c_count;i++)
-	{
-		nnode.clear();
-		for(int j=0;j<v_count;j++)
-		{
-			if(j==consume[i].v_id)
-				continue;
-			nnode.push_back(j);
-		}
-		Ind_netNodes[i]=nnode;
-	}
 }
 
 
@@ -307,7 +328,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 			InsertEdgev_v(bid, eid, bw, netcost);
 			InsertEdgev_v(eid, bid, bw, netcost);
 			cur_lnum++;
-			strcpy(str, topo[cur_lnum]);        
+			strcpy(str, topo[cur_lnum]);       
 			in = str_to_int(str);
 		}
 
@@ -317,7 +338,7 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 		while (curcv<c_count)
 		{
 			cur_lnum++;
-			strcpy(str, topo[cur_lnum]);          
+			strcpy(str, topo[cur_lnum]);           
 			in = str_to_int(str);
 			dint = in.top();
 			in.pop();
@@ -334,7 +355,11 @@ void GraphLinkedTable::GraphInit(char * topo[MAX_EDGE_NUM], int line_num)
 	{
 		headEdge.push_back(ReturnEdgeNo(i,vertex[i].edge_list[0].v_next));
 	}
-	makeInd_netNodes();
+}
+
+vector<v_consum> GraphLinkedTable::getConsume()
+{
+	return consume;
 }
 
 
